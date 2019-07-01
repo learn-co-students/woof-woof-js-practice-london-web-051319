@@ -67,7 +67,7 @@ function updateDogState(e, dog_info) {
     e.target.textContent = 'Good Dog!'
   }
 
-  const dogState = dog_info.isGoodDog;
+  const dogState = (dog_info.isGoodDog ? false : true);
   const id = parseInt(e.target.id);
   const options = {
     method: 'PATCH',
@@ -88,7 +88,6 @@ function updateDogState(e, dog_info) {
       if (filter === 'ON') {
         if (dog_json.isGoodDog) {
           printDogNav(dog_json, dogNavbar);
-          console.log('good');
         }
       }
     })
