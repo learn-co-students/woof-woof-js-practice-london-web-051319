@@ -69,25 +69,13 @@ function populateButton (button, dog) {
 
 /// TOGGLE GOOD DOG
 
-function changeGoodDog (button, dogId) {
-  return fetch(`${DOGS_URL}/${dogId}`, {
+function toggleDog (button, dog) {
+  return fetch(`${DOGS_URL}/${dog.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ isGoodDog: false })
-  }).then(response => response.json())
-    .then(dog => populateButton(button, dog))
-    .then(checkFilter())
-}
-
-function changeBadDog (button, dogId) {
-  return fetch(`${DOGS_URL}/${dogId}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ isGoodDog: true })
+    body: JSON.stringify({ isGoodDog: !(dog.isGoodDog) })
   }).then(response => response.json())
     .then(dog => populateButton(button, dog))
     .then(checkFilter())
@@ -98,9 +86,7 @@ function changeDog (event) {
   dogId = event.target.attributes[0].value
   return fetch(`${DOGS_URL}/${dogId}`)
     .then(response => response.json())
-    .then(dog => {
-      dog.isGoodDog ? changeGoodDog(button, dogId) : changeBadDog(button, dogId)
-    })
+    .then(dog => toggleDog(button, dog))
 }
 
 /// FILTER GOOD DOGS
