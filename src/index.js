@@ -12,6 +12,7 @@ const allDogs = () => {
 // iterate over dogs and add them to page
 
 function createSpans () {
+  document.querySelector('#dog-bar').innerHTML = ''
   allDogs()
     .then(dogArray => {
       dogArray.forEach(dog => {
@@ -50,6 +51,7 @@ function showInfo (dog) {
   h2 = document.createElement('h2')
   h2.innerHTML = dog.name
   button = document.createElement('button')
+  button.addEventListener('click', changeDog)
   populateButton(button, dog)
   dogDiv.append(img, h2, button)
 }
@@ -60,18 +62,14 @@ function populateButton (button, dog) {
   button.setAttribute('dog-button-id', dog.id)
   if (!dog.isGoodDog) {
     button.innerHTML = 'Bad Dog!'
-    button.addEventListener('click', changeBadDog)
   } else {
     button.innerHTML = 'Good Dog!'
-    button.addEventListener('click', changeGoodDog)
   }
 }
 
 /// TOGGLE GOOD DOG
 
-function changeGoodDog (event) {
-  button = event.target
-  dogId = event.target.attributes[0].value
+function changeGoodDog (button, dogId) {
   return fetch(`${DOGS_URL}/${dogId}`, {
     method: 'PATCH',
     headers: {
@@ -80,11 +78,10 @@ function changeGoodDog (event) {
     body: JSON.stringify({ isGoodDog: false })
   }).then(response => response.json())
     .then(dog => populateButton(button, dog))
+    .then(checkFilter())
 }
 
-function changeBadDog (event) {
-  button = event.target
-  dogId = event.target.attributes[0].value
+function changeBadDog (button, dogId) {
   return fetch(`${DOGS_URL}/${dogId}`, {
     method: 'PATCH',
     headers: {
@@ -93,6 +90,17 @@ function changeBadDog (event) {
     body: JSON.stringify({ isGoodDog: true })
   }).then(response => response.json())
     .then(dog => populateButton(button, dog))
+    .then(checkFilter())
+}
+
+function changeDog (event) {
+  button = event.target
+  dogId = event.target.attributes[0].value
+  return fetch(`${DOGS_URL}/${dogId}`)
+    .then(response => response.json())
+    .then(dog => {
+      dog.isGoodDog ? changeGoodDog(button, dogId) : changeBadDog(button, dogId)
+    })
 }
 
 /// FILTER GOOD DOGS
@@ -103,8 +111,6 @@ function addFilterFunctionality () {
 }
 
 function filterDogs (event) {
-  dogBar = document.querySelector('#dog-bar')
-  dogBar.innerHTML = ''
   currentValue = event.target.innerText.split(' ').splice(-1)
   if (currentValue[0] === 'OFF') {
     filterGoodDogs()
@@ -117,6 +123,8 @@ function filterDogs (event) {
 }
 
 function filterGoodDogs () {
+  dogBar = document.querySelector('#dog-bar')
+  dogBar.innerHTML = ''
   allDogs()
     .then(dogArray => {
       dogArray.forEach(dog => {
@@ -125,6 +133,11 @@ function filterGoodDogs () {
         }
       })
     })
+}
+
+function checkFilter () {
+  let currentValue = document.querySelector('#good-dog-filter').innerText.split(' ').splice(-1)
+  if (currentValue[0] === 'ON') { filterGoodDogs() }
 }
 
 function init () {
