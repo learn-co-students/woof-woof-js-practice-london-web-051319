@@ -1,8 +1,12 @@
+* {
+   font-family: sans-serif;
+}
+
 #filter-div {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: skyblue;
+  background: rgb(255,85,10);
 
 }
 
@@ -12,14 +16,16 @@
   font-size: 1em;
   height: 5vh;
   border-radius: 3em;
+   /* background: rgb(255,85,10); */
 }
 
 #dog-bar {
   height: 15vh;
-  background: skyblue;
+  background: rgb(255,85,10);
   display: flex;
   justify-content: space-around;
   align-items: center;
+
 }
 
 #dog-bar span {
@@ -29,7 +35,14 @@
   justify-content: center;
   align-items: center;
   border-radius: 2em;
-  border: 1px solid blue;
+  border: 2px outset white;
+  color: white;
+}
+
+#dog-bar span:active {
+   border: 2px outset white;
+   background: white;
+   color: rgb(255,85,10);
 }
 
 #dog-summary-container {
@@ -44,10 +57,52 @@
 }
 
 #dog-info img {
-  max-width: 75vw;
-  max-height: 25vw;
+  max-width: 50vw;
+  max-height: auto;
 }
 
 body {
   margin: 0;
+}
+
+h2 {
+
+}
+
+h4 {
+   margin-right: 20px;
+}
+
+.status-box {
+   display: flex;
+   justify-content: space-between;
+   align-items: baseline;
+}
+
+.toggle-button-bad {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   font-size: 1em;
+   border-radius: 10%;
+   margin-left: 15px;
+   height: 30px;
+   width: 80px;
+   border: 2px outset red;
+   background: white;
+   color: red;
+}
+
+.toggle-button-good {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   font-size: 1em;
+   border-radius: 10%;
+   margin-left: 15px;
+   height: 30px;
+   width: 80px;
+   border: 2px outset green;
+   background: white;
+   color: green;
 }
