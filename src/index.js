@@ -1,111 +1,110 @@
-const BASE_URL = "http://localhost:3000/pups";
+document.addEventListener("DOMContentLoaded", init)
 
-window.addEventListener('DOMContentLoaded', (e) => {
-    const dogBarDiv = document.querySelector("#dog-bar")
-    const dogInfoDiv = document.querySelector("#dog-info")
-    const goodDogFilter = document.querySelector("#good-dog-filter")
-
-    createPups(false);
-
-
-    //Adds click event onto the dog span to show the puppy info once clicked
-    dogBarDiv.addEventListener('click', e => {
-        if (e.target.nodeName === "SPAN") {
-            const pupId = e.target.id.slice(7, e.target.id.length)
-            getPup(pupId).then(pup => {
-                showPupInfo(pup);
-            })
-        }
-    })
-
-    //Adds event to change the status of the dog from good to bad or vise versa
-    dogInfoDiv.addEventListener('click', e => {
-        if (e.target.nodeName === "BUTTON") {
-            const pupId = e.target.id.slice(11, e.target.id.length)
-            const pupIsGoodDog = e.target.textContent.slice(0,4) === "Good" ? true : false
-            patchPup(pupId, {isGoodDog: !pupIsGoodDog}).then(pupChanged =>{
-                showPupInfo(pupChanged);
-            })
-        }
-    })
-
-    //Adds the event for the filter to toggle it on or off
-    goodDogFilter.addEventListener('click', e => {
-        let status = e.target.textContent === "Filter good dogs: OFF" ? false : true
-        clearDogBar();
-        createPups(!status);
-        e.target.textContent = !status ? "Filter good dogs: ON" : "Filter good dogs OFF"
-    })
-})
-
-function getPups() {
-    return fetch(BASE_URL).then(resp => resp.json())
+function init(e){
+  const filterDogsButton = document.querySelector("#good-dog-filter")
+  filterDogsButton.addEventListener("click", toggleFilterDogs)
+  getDogs().then(addAllDogsToDogBar)
 }
 
-function getPup(pupId){
-    return fetch(`${BASE_URL}/${pupId}`).then(resp => resp.json())
+function toggleFilterDogs(e){
+  const filterDogsButton = document.querySelector("#good-dog-filter")
+  if (filterDogsButton.innerText.includes("OFF")){
+    filterDogsButton.innerText = "Filter good dogs: ON"
+    updateDogBar()
+  } else {
+    filterDogsButton.innerText = "Filter good dogs: OFF"
+    updateDogBar()
+  }
 }
 
-function createPups(filter) {
-    getPups().then(pups => {
-        pups = filter ? pups.filter(pup => {return pup.isGoodDog}) : pups
-        for (pup of pups) {
-            addPup(createPupSpan(pup));
-        }
-        return pups
+function addAllDogsToDogBar(dogArray, filter = false){
+  const dogBar = document.querySelector("#dog-bar")
+  dogBar.innerHTML = ""
+  if (filter) {
+    dogArray.filter(dog => dog.isGoodDog).forEach(addDogSpantoDogBar)
+  } else {
+    dogArray.forEach(addDogSpantoDogBar)
+  }
+}
+
+function addDogSpantoDogBar(dog){
+  const dogBar = document.querySelector("#dog-bar")
+  const dogSpan = document.createElement("span")
+  dogSpan.innerText = dog.name
+  dogSpan.dataset.id = dog.id
+
+  dogSpan.addEventListener("click", onDogSpanClick)
+
+  dogBar.append(dogSpan)
+}
+
+function onDogSpanClick(e){
+  getSingleDog(e.target.dataset.id)
+    .then(addDogInfoToPage)
+}
+
+function addDogInfoToPage(dog){
+  const dogInfo = document.querySelector("#dog-info")
+  dogInfo.innerHTML = ""
+  const dogImg = document.createElement("img")
+  dogImg.src = dog.image
+
+  const dogTitle = document.createElement("h2")
+  dogTitle.innerText = dog.name
+
+  const dogButton = document.createElement("button")
+  dogButton.innerText = dog.isGoodDog ? "Good Dog!" : "Bad Dog!"
+  dogButton.dataset.id = dog.id
+  dogButton.addEventListener("click", onGoodDogButtonClick)
+
+  dogInfo.append(dogImg, dogTitle, dogButton)
+}
+
+function onGoodDogButtonClick(e){
+  let newValue;
+  if (e.target.innerText.includes("Good")){
+    e.target.innerText = "Bad Dog"
+    newValue = false
+  } else {
+    e.target.innerText = "Good Dog"
+    newValue = true
+  }
+  toggleGoodDog(e.target.dataset.id, newValue).then(updateDogBar)
+}
+
+function updateDogBar(){
+  const filterDogsButton = document.querySelector("#good-dog-filter")
+  if (filterDogsButton.innerText.includes("OFF")){
+    getDogs().then(dogArray => addAllDogsToDogBar(dogArray))
+  } else {
+    getDogs().then(dogArray => addAllDogsToDogBar(dogArray, true))
+  }
+}
+
+// fetches:
+
+const baseURL = "http://localhost:3000/pups"
+
+function getDogs(){
+  return fetch(baseURL)
+    .then(r => r.json())
+}
+
+function getSingleDog(id){
+  return fetch(baseURL + `/${id}`)
+    .then(r => r.json() )
+}
+
+function toggleGoodDog(id, newValue){
+  const options = {
+    method: "PATCH",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      isGoodDog: newValue
     })
+  }
+  return fetch(baseURL + `/${id}`, options)
+    .then(r => r.json())
 }
-
-function createPupSpan(pup) {
-    const span = document.createElement('span')
-    span.id = `pup-id-${pup.id}`
-    span.textContent = pup.name
-    return span
-  }
-
-  function addPup(pupSpan) {
-    const div = document.querySelector("#dog-bar")
-    div.appendChild(pupSpan)
-    return pupSpan
-  }
-
-  //updates the puppys database
-  function patchPup(pupId, pupDetails) {
-      return fetch(`${BASE_URL}/${pupId}`, {
-          method: 'PATCH',
-          headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json'
-          },
-          body: JSON.stringify(pupDetails)
-      }).then(resp => resp.json())
-  }
-
-  //clears the bar of the puppys that are bad
-  function clearDogBar() {
-      const div = document.querySelector("#dog-bar")
-      while (div.firstChild) {
-          div.removeChild(div.firstChild);
-      }
-  }
-
-  //creates the puppys to be displayed
-  function showPupInfo(pup) {
-      const img = document.createElement('img')
-      img.src = pup.image
-
-      const h2 = document.createElement('h2')
-      h2.textContent = pup.name
-
-      const button = document.createElement('button')
-      button.textContent = pup.isGoodDog? "Good Dog!" : "Bad Dog!"
-      button.id = `pup-button-${pup.id}`
-
-      const div = document.querySelector('#dog-info')
-
-      while (div.firstChild) {
-          div.removeChild(div.firstChild);
-      }
-
-      div.append(img, h2, button)
-  }
