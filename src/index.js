@@ -1,5 +1,13 @@
+const form = document.querySelector("form");
+const BASE_URL = "http://localhost:3000/pups";
+let goodDogFilter = false;
+const goodDogFilterButton = document.querySelector("#good-dog-filter");
+goodDogFilterButton.addEventListener("click", e => toggleFilter(e));
+
+const dog_bar = document.querySelector("#dog-bar");
+
+
 function addDog(dog) {
-  const dog_bar = document.querySelector("#dog-bar");
   const span = makeDogSpan(dog);
   dog_bar.appendChild(span);
 }
@@ -86,45 +94,47 @@ function showDogs(dogArray) {
   });
 }
 
-const form = document.querySelector("form");
-
-// form.addEventListener("submit", e => handleSubmission(e));
-
-// function handleSubmission(e) {
-//   e.preventDefault();
-//   const [nameInputNode, imgInputNode] = e.target;
-//   const dogObj = {
-//     name: nameInputNode.value,
-//     img: imgInputNode.value
-//   };
-
-//   createADog(dogObj).then(addDog);
-// }
-
-// function createADog(dog) {
-//   return fetch(BASE_URL, {
-//     method: "POST",
-//     body: JSON.stringify(dog),
-//     headers: {
-//       "Content-Type": "application/json"
-//     }
-//   }).then(dog => dog.json());
-// }
-
-// globals for fetching
-
-const BASE_URL = "http://localhost:3000/pups";
 
 
+
+function goodDogFilterButtonFunction() {
+  if (goodDogFilter) {
+    goodDogFilterButton.innerText = "Filter good dogs: ON";
+  } else {
+    goodDogFilterButton.innerText = "Filter good dogs: OFF";
+  }
+}
+
+function toggleFilter(e) {
+  if (goodDogFilter) {
+    dog_bar.innerHTML = "";
+    goodDogFilter = false;
+    getGoodDogsAndPutThemInTheDOM();
+    goodDogFilterButtonFunction();
+  } else {
+    dog_bar.innerHTML = "";
+    goodDogFilter = true;
+    getAllDogsAndPutThemInTheDOM();
+    goodDogFilterButtonFunction();
+  }
+}
+
+function getGoodDogsAndPutThemInTheDOM() {
+  fetch("http://localhost:3000/pups") // ADD FILTER
+    .then(dogsData => dogsData.json())
+    .then(dogsArray => showDogs(dogsArray));
+}
 
 // init
 function getAllDogsAndPutThemInTheDOM() {
   fetch("http://localhost:3000/pups")
     .then(dogsData => dogsData.json())
-    .then(dogsArray => showDogs(dogsArray));
+    .then(dogsArray => dogsArray.filter(dog => dog.isGoodDog === true))
+    .then(goodDogsArray => showDogs(goodDogsArray));
 }
 
 function init() {
+  goodDogFilterButtonFunction();
   getAllDogsAndPutThemInTheDOM();
 }
 
